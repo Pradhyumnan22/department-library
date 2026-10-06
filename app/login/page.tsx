@@ -3,25 +3,19 @@
 import { FormEvent, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export default function SignupPage() {
-  const [fullName, setFullName] = useState("");
+export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  async function handleSignup(event: FormEvent<HTMLFormElement>) {
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const supabase = createClient();
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-      },
     });
 
     if (error) {
@@ -29,25 +23,16 @@ export default function SignupPage() {
       return;
     }
 
-    setMessage("Account created successfully.");
+    setMessage(`Login successful. User: ${data.user.email}`);
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center">
       <form
-        onSubmit={handleSignup}
+        onSubmit={handleLogin}
         className="w-full max-w-md space-y-4 rounded-lg border p-6"
       >
-        <h1 className="text-2xl font-bold">Create Account</h1>
-
-        <input
-          type="text"
-          placeholder="Full name"
-          value={fullName}
-          onChange={(event) => setFullName(event.target.value)}
-          required
-          className="w-full rounded border p-2"
-        />
+        <h1 className="text-2xl font-bold">Sign In</h1>
 
         <input
           type="email"
@@ -64,7 +49,6 @@ export default function SignupPage() {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           required
-          minLength={6}
           className="w-full rounded border p-2"
         />
 
@@ -72,12 +56,10 @@ export default function SignupPage() {
           type="submit"
           className="w-full rounded bg-black px-4 py-2 text-white"
         >
-          Sign Up
+          Sign In
         </button>
 
-        {message && (
-          <p className="text-sm">{message}</p>
-        )}
+        {message && <p className="text-sm">{message}</p>}
       </form>
     </main>
   );
