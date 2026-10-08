@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Department Library Tracker
 
-## Getting Started
+A role-based library management application built with Next.js, TypeScript, and Supabase.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Supabase authentication
+- Two user roles:
+  - Member
+  - Librarian
+- Book management
+- Book issuing and returning
+- Copy availability enforcement
+- Late-fee calculation
+- Row Level Security (RLS)
+- Role-based access control
+- Automated late-fee tests
+- Responsive dashboard
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Next.js
+- React
+- TypeScript
+- Supabase
+- PostgreSQL
+- Tailwind CSS
+- Vitest
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Data Model
 
-## Learn More
+### Profiles
 
-To learn more about Next.js, take a look at the following resources:
+The `profiles` table stores application-specific information for authenticated users.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Column | Description |
+|---|---|
+| `id` | References `auth.users(id)` |
+| `full_name` | User's full name |
+| `role` | `member` or `librarian` |
+| `created_at` | Profile creation timestamp |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+New users are automatically created as members through a database trigger.
 
-## Deploy on Vercel
+### Books
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The `books` table stores library book information.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Column | Description |
+|---|---|
+| `id` | Unique book identifier |
+| `title` | Book title |
+| `author` | Book author |
+| `number_of_copies` | Total number of copies |
+| `book_value_paise` | Book value stored in paise |
+| `created_at` | Book creation timestamp |
+
+Money is stored as an integer in minor units rather than using floating-point values.
+
+Examples:
+
+- 50000 paise = Rs. 500
+- 2500 paise = Rs. 25
+
+### Loans
+
+The `loans` table records book issues.
+
+| Column | Description |
+|---|---|
+| `id` | Unique loan identifier |
+| `book_id` | References the issued book |
+| `member_id` | References the borrowing member |
+| `issued_date` | Date the book was issued |
+| `due_date` | Date the book is due |
+| `returned_date` | Date the book was returned |
+| `created_at` | Loan creation timestamp |
+
+## Relationships
+
+```text
+auth.users
+    |
+    | 1:1
+    v
+profiles
+    |
+    | 1:N
+    v
+loans
+    |
+    | N:1
+    v
+books
