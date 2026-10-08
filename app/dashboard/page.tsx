@@ -42,20 +42,6 @@ function getTodayDate(): string {
   return `${year}-${month}-${day}`;
 }
 
-function getLateFeePaise(loan: Loan, book: Book | undefined): number {
-  if (!book) {
-    return 0;
-  }
-
-  return calculateLateFeePaise({
-    issuedDate: loan.issued_date,
-    dueDate: loan.due_date,
-    returnedDate: loan.returned_date,
-    asOfDate: getTodayDate(),
-    bookValuePaise: book.book_value_paise,
-  });
-}
-
 export default function DashboardPage() {
   const router = useRouter();
 
@@ -506,6 +492,23 @@ export default function DashboardPage() {
       member.full_name.trim() ||
       `Member ${member.id.slice(0, 8)}`
     );
+  }
+
+  function getLateFeePaise(
+    loan: Loan,
+    book: Book | undefined,
+  ): number {
+    if (!book) {
+      return 0;
+    }
+
+    return calculateLateFeePaise({
+      issuedDate: loan.issued_date,
+      dueDate: loan.due_date,
+      returnedDate: loan.returned_date,
+      asOfDate: getTodayDate(),
+      bookValuePaise: book.book_value_paise,
+    });
   }
 
   return (
